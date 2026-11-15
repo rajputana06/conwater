@@ -53,8 +53,8 @@
         <a href="#tab-api" onclick="switchTab('api')" class="hover:text-white transition">API Docs</a>
       </nav>
       <div class="flex items-center gap-3">
-        <span id="serverBadge" class="px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-          ● Checking Server...
+        <span id="serverBadge" class="px-3 py-1 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
+          ● Connecting to Backend...
         </span>
       </div>
     </div>
@@ -70,18 +70,18 @@
         RJS Cloud File Conversion Platform
       </h1>
       <p class="mt-4 text-sm sm:text-base text-sky-200 max-w-2xl mx-auto leading-relaxed">
-        Convert Office files to PDF, render HTML to PDF, compress images, generate thumbnails, and merge PDFs instantly.
+        Convert Office files to PDF, render HTML to PDF, compress images, generate thumbnails, and merge PDFs instantly via ModelScope Cloud API.
       </p>
       
       <!-- API Key & Endpoint Config Bar -->
       <div class="mt-8 max-w-xl mx-auto card-glass p-4 rounded-2xl space-y-3 shadow-xl border border-sky-300/30">
         <div>
-          <label class="block text-[10px] uppercase font-bold text-sky-300 mb-1 text-left">Active Backend Server URL (Auto-Detected):</label>
-          <input type="text" id="apiBaseUrlInput" class="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-400 font-mono" />
+          <label class="block text-[10px] uppercase font-bold text-sky-300 mb-1 text-left">ModelScope Backend Server URL:</label>
+          <input type="text" id="apiBaseUrlInput" class="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-400 font-mono" value="https://rajputanajyotisystem06-website-rjs-cloude-conwarter.modelscope.ai" />
         </div>
         <div class="flex items-center gap-2">
           <input type="text" id="globalApiKey" placeholder="Bearer API Key" class="w-full bg-slate-900/80 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-400 font-mono" value="rjs_live_demo123456" />
-          <button onclick="saveSettings()" class="px-5 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-xs font-bold shrink-0 transition shadow">Save</button>
+          <button onclick="saveSettings()" class="px-5 py-2 bg-sky-500 hover:bg-sky-600 text-white rounded-xl text-xs font-bold shrink-0 transition shadow">Save &amp; Test</button>
         </div>
       </div>
 
@@ -223,32 +223,30 @@
   <script>
     let currentEndpoint = '';
     let currentInputType = '';
+    const DEFAULT_BACKEND = 'https://rajputanajyotisystem06-website-rjs-cloude-conwarter.modelscope.ai';
 
     window.onload = async function() {
       const savedKey = localStorage.getItem('rjs_api_key') || 'rjs_live_demo123456';
+      const savedUrl = localStorage.getItem('rjs_api_base_url') || DEFAULT_BACKEND;
+      
       document.getElementById('globalApiKey').value = savedKey;
-
-      // Always default to the exact origin where the page is hosted
-      let defaultUrl = window.location.origin;
-      if (defaultUrl.startsWith('file://')) {
-        defaultUrl = 'http://localhost:7860';
-      }
-      document.getElementById('apiBaseUrlInput').value = defaultUrl;
-      checkServerHealth(defaultUrl);
+      document.getElementById('apiBaseUrlInput').value = savedUrl;
+      checkServerHealth(savedUrl);
     }
 
     async function checkServerHealth(baseUrl) {
       const badge = document.getElementById('serverBadge');
+      badge.textContent = "● Checking Backend...";
       try {
         const res = await fetch(`${baseUrl}/health`);
         if (res.ok) {
-          badge.textContent = "● Server Online";
+          badge.textContent = "● ModelScope Backend Online";
           badge.className = "px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30";
         } else {
           throw new Error();
         }
       } catch (e) {
-        badge.textContent = "● Server Offline / Check URL";
+        badge.textContent = "● Backend Offline / Check URL";
         badge.className = "px-3 py-1 rounded-full text-[11px] font-bold bg-red-500/20 text-red-300 border border-red-400/30";
       }
     }
@@ -257,8 +255,8 @@
       const key = document.getElementById('globalApiKey').value.trim();
       const baseUrl = document.getElementById('apiBaseUrlInput').value.trim().replace(/\/$/, '');
       localStorage.setItem('rjs_api_key', key);
+      localStorage.setItem('rjs_api_base_url', baseUrl);
       checkServerHealth(baseUrl);
-      alert('Settings updated!');
     }
 
     function switchTab(tab) {
@@ -414,7 +412,7 @@
         statusEl.classList.remove('text-sky-200');
         statusEl.classList.add('text-emerald-400');
       } catch (err) {
-        statusEl.textContent = `Error: ${err.message}`;
+        statusEl.textContent = `Error: ${err.message}\n\nNote: Make sure ModelScope Studio visibility is set to Public.`;
         statusEl.classList.remove('text-sky-200');
         statusEl.classList.add('text-red-400');
       }
